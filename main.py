@@ -1,25 +1,42 @@
 # File: /btcusdt-arbitrage/btcusdt-arbitrage/src/main.py
 
+from multiprocessing import Process
 from connectors.gate_connector import GateConnector
-from connectors.bybit_connector import BybitConnector
-from detector import ArbitrageDetector
+import zmq
+
+
+def run_gate_connector():
+    """Run the GateConnector as a publisher."""
+    gate_connector = GateConnector()
+    gate_connector.connect()
+
+
+def arbitrage_detector():
+    """Run the subscriber to receive messages from GateConnector."""
+    context = zmq.Context()
+    socket = context.socket(zmq.SUB)
+    socket.connect("tcp://localhost:5555")  # Connect to the PUB socket
+    socket.setsockopt_string(zmq.SUBSCRIBE, "")  # Subscribe to all messages
+
+    while True:
+        # Receive messages from the GateConnector
+        message = socket.recv()
+        print("Received message:", message.decode('utf-8'))
+        # Here you can implement your arbitrage detection logic
 
 
 def main():
-    gate_connector = GateConnector()
-    bybit_connector = BybitConnector()
+    # Create a separate process for the GateConnector
+    gate_process = Process(target=run_gate_connector)
+    gate_process.start()
 
-    gate_order_book = gate_connector.fetch_order_book()
-    bybit_order_book = bybit_connector.fetch_order_book()
+    # Create a separate process for the ArbitrageDetector
+    detector_process = Process(target=arbitrage_detector)
+    detector_process.start()
 
-    arb_detector = ArbitrageDetector()
-    opportunities = arb_detector.detect_opportunities(gate_order_book, bybit_order_book)
-
-    if opportunities:
-        for opportunity in opportunities:
-            print(f"Arbitrage Opportunity: {opportunity}")
-    else:
-        print("No arbitrage opportunities found.")
+    # Wait for both processes to finish
+    gate_process.join()
+    detector_process.join()
 
 
 if __name__ == "__main__":
