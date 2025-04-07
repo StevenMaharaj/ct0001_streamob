@@ -13,11 +13,6 @@ class BybitConnector(BaseConnector):
         self.socket.bind(f"tcp://*:{self.message_port}")  # Bind PUB socket to a port
 
 
-        self.bp = 0.0
-        self.ap = 0.0
-        self.bqty = 0.0
-        self.aqty = 0.0
-
     def connect(self):
         """Connect to Bybit WebSocket and publish order book updates."""
         with connect(self.base_url) as ws:

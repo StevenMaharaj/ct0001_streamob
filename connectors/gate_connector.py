@@ -15,10 +15,9 @@ class GateConnector(BaseConnector):
         """Connect to Gate.io WebSocket and publish order book updates."""
         with connect(self.base_url) as ws:
             # Subscribe to order book updates
-            ws.send('{"channel": "futures.order_book", "event": "subscribe", "payload": ["BTC_USDT", "20", "0"]}')
+            ws.send('{"channel": "futures.order_book", "event": "subscribe", "payload": ["BTC_USDT", "1", "0"]}')
             resp_str = ws.recv()
             resp = orjson.loads(resp_str)
-            print(resp)
             assert resp['result']['status'] == 'success', "Subscription failed"
 
             while True:

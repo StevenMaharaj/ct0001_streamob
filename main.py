@@ -1,5 +1,3 @@
-# File: /btcusdt-arbitrage/btcusdt-arbitrage/src/main.py
-
 from multiprocessing import Process
 from connectors.bybit_connector import BybitConnector
 from connectors.gate_connector import GateConnector
@@ -17,7 +15,6 @@ def run_bybit_connector():
     bybit_connector.connect()
 
 def arbitrage_detector():
-    """Run the subscriber to receive messages from GateConnector."""
     context = zmq.Context()
     socket_gate = context.socket(zmq.SUB)
     socket_gate.connect("tcp://localhost:5555")  # Connect to the PUB socket
@@ -27,11 +24,29 @@ def arbitrage_detector():
     socket_bybit.setsockopt_string(zmq.SUBSCRIBE, "")  # Subscribe to all messages
 
     while True:
-        # Receive messages from the GateConnector
-        # message = socket_gate.recv()
-        message = socket_bybit.recv()
-        print("Received message:", message.decode('utf-8'))
-        # Here you can implement your arbitrage detection logic
+        message_gate_encoded = socket_gate.recv()
+        message_bybit_encoded = socket_bybit.recv()
+
+        # Decode the message
+        message_gate = message_gate_encoded.decode('utf-8')
+        message_bybit = message_bybit_encoded.decode('utf-8')
+
+        # Split the message into components
+        gate_components = message_gate.split()
+        bybit_components = message_bybit.split()
+        # Extract the components
+        bp_gate = float(gate_components[0])
+        ap_gate = float(gate_components[1])
+        bp_bybit = float(bybit_components[0])
+        ap_bybit = float(bybit_components[1])
+
+        # decide if arbitrage opportunity exists
+        if bp_gate > ap_bybit:
+            print(f"Arbitrage opportunity detected! Buy on Bybit at {ap_bybit} and sell on Gate at {bp_gate}")
+        elif ap_gate < bp_bybit:
+            print(f"Arbitrage opportunity detected! Buy on Gate at {bp_gate} and sell on Bybit at {ap_bybit}")
+        
+
 
 
 def main():
