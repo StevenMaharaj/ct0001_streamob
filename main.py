@@ -9,10 +9,12 @@ def run_gate_connector():
     gate_connector = GateConnector()
     gate_connector.connect()
 
+
 def run_bybit_connector():
     """Run the BybitConnector as a publisher."""
     bybit_connector = BybitConnector()
     bybit_connector.connect()
+
 
 def arbitrage_detector():
     context = zmq.Context()
@@ -28,8 +30,8 @@ def arbitrage_detector():
         message_bybit_encoded = socket_bybit.recv()
 
         # Decode the message
-        message_gate = message_gate_encoded.decode('utf-8')
-        message_bybit = message_bybit_encoded.decode('utf-8')
+        message_gate = message_gate_encoded.decode("utf-8")
+        message_bybit = message_bybit_encoded.decode("utf-8")
 
         # Split the message into components
         gate_components = message_gate.split()
@@ -42,11 +44,13 @@ def arbitrage_detector():
 
         # decide if arbitrage opportunity exists
         if bp_gate > ap_bybit:
-            print(f"Arbitrage opportunity detected! Buy on Bybit at {ap_bybit} and sell on Gate at {bp_gate}")
+            print(
+                f"Arbitrage opportunity detected! Buy on Bybit at {ap_bybit} and sell on Gate at {bp_gate}"
+            )
         elif ap_gate < bp_bybit:
-            print(f"Arbitrage opportunity detected! Buy on Gate at {bp_gate} and sell on Bybit at {ap_bybit}")
-        
-
+            print(
+                f"Arbitrage opportunity detected! Buy on Gate at {bp_gate} and sell on Bybit at {ap_bybit}"
+            )
 
 
 def main():

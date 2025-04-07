@@ -12,7 +12,6 @@ class BybitConnector(BaseConnector):
         self.socket = self.context.socket(zmq.PUB)
         self.socket.bind(f"tcp://*:{self.message_port}")  # Bind PUB socket to a port
 
-
     def connect(self):
         """Connect to Bybit WebSocket and publish order book updates."""
         with connect(self.base_url) as ws:
@@ -22,14 +21,11 @@ class BybitConnector(BaseConnector):
             resp_str = ws.recv()
             resp = orjson.loads(resp_str)
             # Check if the subscription was successful
-            assert resp['success'] is True, "Subscription failed"
+            assert resp["success"] is True, "Subscription failed"
             while True:
-                # Receive and process messages
                 raw_data = orjson.loads(ws.recv())
                 if raw_data:
-                    # Parse the message
                     parsed_data = self.parse_data(raw_data)
-                    # Publish the parsed data
                     self.socket.send(parsed_data)
                 else:
                     break
@@ -46,10 +42,9 @@ class BybitConnector(BaseConnector):
         top_bid = bids[0]
         top_ask = asks[0]
 
-        # Format the output as [bp, ap, bqty, aqty]
         bp = float(top_bid[0])
         bqty = float(top_bid[1])
         ap = float(top_ask[0])
         aqty = float(top_ask[1])
 
-        return f"{bp} {ap} {bqty} {aqty}".encode('utf-8')
+        return f"{bp} {ap} {bqty} {aqty}".encode("utf-8")
