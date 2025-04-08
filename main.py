@@ -65,9 +65,6 @@ def main():
     detector_process = Process(target=arbitrage_detector)
     detector_process.start()
 
-    # Wait for both processes to finish
-    gate_process.join()
-    detector_process.join()
 
 
 if __name__ == "__main__":
